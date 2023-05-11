@@ -80,7 +80,7 @@ class Board extends React.Component<Props, State> {
                 const pieceColor = this.getPieceColor({x, y}, pieceLocations);
                 const square = (<Square
                     key={squareKey}
-                    click={Square.clickFunction()} 
+                    click={Square.clickFunction({x, y})} 
                     position={{x, y}}
                     pieceColor={pieceColor}
                 />);

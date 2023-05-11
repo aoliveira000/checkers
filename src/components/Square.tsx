@@ -1,7 +1,7 @@
 import React, { MouseEvent, ReactNode } from "react";
 import Piece from "./Piece";
-import {Props} from "../interfaces/Square";
-import {Position} from "../interfaces/Position";
+import { Props, color } from "../interfaces/Square";
+import { Position } from "../interfaces/Position";
 
 interface State {};
 
@@ -12,13 +12,13 @@ class Square extends React.Component<Props, State> {
     }
 
     public static Color = {
-        black: 'black',
-        white: 'white',
+        black: 'black' as color,
+        white: 'white' as color,
     }; 
 
-    public static clickFunction = () => {
+    public static clickFunction = (position: Position) => {
         return (e:MouseEvent<HTMLDivElement>) => {
-            console.log(`I've been clicked and I'm a square!`);
+            console.log(`I've been clicked and I'm a square! ` + JSON.stringify(position));
         };
     }
 
@@ -31,13 +31,13 @@ class Square extends React.Component<Props, State> {
             pieceNode = (<Piece 
                 color={pieceColor} 
                 position={position} 
-                click={Piece.clickFunction()} 
+                click={Piece.clickFunction(position)} 
             />);
         }
         return (<div className={`square ${squareColor}`} onClick={click} >{pieceNode}</div>);
     }
 
-    private getSquareColor = (position: Position): string => {
+    private getSquareColor = (position: Position): color => {
         const {x,y} = position;
         let color;
         if (x%2) {
