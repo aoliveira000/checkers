@@ -1,0 +1,43 @@
+.app {
+  background-color: rgb(159, 65, 65);
+}
+
+.board {
+  width: 800px;
+  height: 800px;
+  border: 1px black solid;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.row {
+  width: 800px;
+  height: 100px;
+}
+
+.square {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+}
+
+.piece {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  margin-top: 22px;
+  margin-left: 22px;
+  border: 1px white solid;
+}
+
+.black {
+  background-color: black;
+}
+
+.red {
+  background-color: red;  
+}
+
+.white {
+  background-color: white;
+}
