@@ -1,18 +1,17 @@
 import React, { MouseEvent, ReactNode } from "react";
-import { Props, color } from "../interfaces/Piece";
-import { Position } from "../interfaces/Position";
+import { Position } from "../interfaces/Shared";
 
-interface State {
-    followMouse: boolean
+export type color = 'black' | 'red' | undefined;
+
+export interface Props {
+    color: color,
+    crowned: boolean,
+    position: Position,    
 };
 
-class Piece extends React.Component<Props, State> {
-
+class Piece extends React.Component<Props> {
     constructor(props: Props) {
         super(props);
-        this.state = {
-            followMouse: false
-        };
     }
 
     public static Color = {
@@ -20,15 +19,9 @@ class Piece extends React.Component<Props, State> {
         red: 'red' as color,
     }; 
 
-    public static clickFunction = (position: Position) => {
-        return (e:MouseEvent<HTMLDivElement>) => {
-            console.log(`I've been clicked and I'm a piece! ` + JSON.stringify(position) );
-        };
-    }
-
     public render(): ReactNode {
-        const {color, click} = this.props;
-        return (<div className={`piece ${color}`} onClick={click} />);
+        const {crowned, color} = this.props;
+        return (<div className={`piece ${color} ${crowned ? 'crowned' : ''}`} />);
     }
 }
 

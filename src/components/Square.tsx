@@ -1,42 +1,30 @@
-import React, { MouseEvent, ReactNode } from "react";
-import Piece from "./Piece";
-import { Props, color } from "../interfaces/Square";
-import { Position } from "../interfaces/Position";
+import React, { MouseEventHandler, ReactNode } from "react";
+import Piece, {Props as PieceAttribute} from "./Piece";
+import { Position } from "../interfaces/Shared";
 
-interface State {};
+export type color = 'black' | 'white';
 
-class Square extends React.Component<Props, State> {
+export interface Props {
+    click: MouseEventHandler,
+    position: Position,
+    piece: PieceAttribute | undefined,
+    highlight: boolean
+};
+
+class Square extends React.Component<Props> {
     
     constructor(props: Props) {
-        super(props);        
+        super(props); 
+        this.state = {
+            highlight: false
+        };    
     }
 
     public static Color = {
         black: 'black' as color,
         white: 'white' as color,
     }; 
-
-    public static clickFunction = (position: Position) => {
-        return (e:MouseEvent<HTMLDivElement>) => {
-            console.log(`I've been clicked and I'm a square! ` + JSON.stringify(position));
-        };
-    }
-
-    public render(): ReactNode {
-        const {click, pieceColor, position} = this.props;
-
-        let squareColor: string = this.getSquareColor(position);
-        let pieceNode: ReactNode | undefined;
-        if (pieceColor !== undefined) {
-            pieceNode = (<Piece 
-                color={pieceColor} 
-                position={position} 
-                click={Piece.clickFunction(position)} 
-            />);
-        }
-        return (<div className={`square ${squareColor}`} onClick={click} >{pieceNode}</div>);
-    }
-
+    
     private getSquareColor = (position: Position): color => {
         const {x,y} = position;
         let color;
@@ -52,6 +40,20 @@ class Square extends React.Component<Props, State> {
             }
         }
         return color;
+    }
+
+    public render(): ReactNode {
+        const {click, highlight, piece, position} = this.props;
+
+        let pieceNode: ReactNode | undefined;
+        if (piece !== undefined) {
+            pieceNode = (<Piece {...piece} />);
+        }
+
+        let squareColor: string = this.getSquareColor(position);
+        return (<div className={`square ${squareColor} ${highlight ? 'highlight': ''}`} onClick={click} >
+            {pieceNode}
+        </div>);
     }
 }
 

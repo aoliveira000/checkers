@@ -1,90 +1,88 @@
-import React, { ReactNode } from "react";
-import Piece from "./Piece";
+import React, { MouseEvent, MouseEventHandler, ReactNode } from "react";
+import Piece, {Props as PieceProperties} from "./Piece";
 import Square from "./Square";
-import { Position } from "../interfaces/Position";
-import { color as PieceColor } from "../interfaces/Piece";
-import { PieceLocations } from "../interfaces/Board";
+import { GameState, Move, Position } from "../interfaces/Shared";
+import { numberToPosition, positionToNumber } from '../Util';
 
 interface Props {
     width: number,
-    height: number
+    height: number,
+    gameState: GameState,    
+    update: (highlights: Position[], pieceSelected: PieceProperties | undefined, move: Move | void) => void
 };
 
-interface State {
-    pieceLocations: {
-        red: Position[],
-        black: Position[],
-    }
-};
+interface State {};
 
 class Board extends React.Component<Props, State> {
-
+    
     constructor(props: Props) {
-        super(props);
-        this.state = {
-            pieceLocations: {
-                red: [
-                    {x: 0, y: 1},
-                    {x: 0, y: 3},
-                    {x: 0, y: 5},
-                    {x: 0, y: 7},
-                    {x: 1, y: 0},
-                    {x: 1, y: 2},
-                    {x: 1, y: 4},
-                    {x: 1, y: 6},
-                    {x: 2, y: 1},
-                    {x: 2, y: 3},
-                    {x: 2, y: 5},
-                    {x: 2, y: 7},
-                ],
-                black: [
-                    {x:5, y:0},
-                    {x:5, y:2},
-                    {x:5, y:4},
-                    {x:5, y:6},
-                    {x:6, y:1},
-                    {x:6, y:3},
-                    {x:6, y:5},
-                    {x:6, y:7},
-                    {x:7, y:0},
-                    {x:7, y:2},
-                    {x:7, y:4},
-                    {x:7, y:6}
-                ]
-            }
-        };
+        super(props);        
     }
 
-    private hasPiece = (needle: Position, haystack: Position[]): boolean => {
-        return !!haystack.find((position: Position) => {
-            return JSON.stringify(position) === JSON.stringify(needle);
+    private squareClick = (position: Position, piece: PieceProperties | undefined): MouseEventHandler => {
+        return async (event: MouseEvent): Promise<void> => {
+            const { gameState, update } = this.props;
+            
+            if (gameState.pieceSelected == undefined) {
+                if (piece === undefined) return;
+
+                const moves: Position[] = [];                
+                gameState.moves.forEach((move: Move) => {
+                    if (move.origin === positionToNumber(position)) {
+                        moves.push(numberToPosition(move.destination));
+                    }
+                });
+                if (moves.length === 0) return;
+
+                await update([position].concat(moves), piece, undefined);
+            } else {
+                const validMove: Move | undefined = gameState.moves.find((move: Move) => {
+                    return move.destination === positionToNumber(position) 
+                        && move.origin === positionToNumber(gameState.pieceSelected!.position);
+                });
+                if (!validMove) {
+                    await update([], undefined, undefined);
+                } else {
+                    await update([], undefined, validMove);
+                }
+            }
+        };
+    };
+
+    private getPiece = (position: Position, pieceStates: PieceProperties[]): PieceProperties | undefined => {
+        return pieceStates.find((piece: PieceProperties) => {
+            return piece.position.x === position.x && piece.position.y === position.y;
+        });        
+    };
+
+    private isHighlighted = (position: Position, highlights: Position[]): boolean => {
+        return !!highlights.find((hPosition: Position) => {
+            return hPosition.x === position.x && hPosition.y === position.y;
         });
+
     };
 
-    private getPieceColor = (position: Position, pieceLocations: PieceLocations): PieceColor => {
-        let piece: PieceColor;
-        if (this.hasPiece(position, pieceLocations.black)) {
-            piece = Piece.Color.black;
-        } else if (this.hasPiece(position, pieceLocations.red)) {
-            piece = Piece.Color.red;
-        }
-        return piece;
+    private populateSquare = (position: Position, gameState: GameState): ReactNode => {
+        const {highlights, pieces} = gameState;
+        const squareKey: string = `square_${JSON.stringify(position)}`;   
+        const piece = this.getPiece(position, pieces);
+        const highlight = this.isHighlighted(position, highlights);
+        return (<Square
+            key={squareKey}
+            click={this.squareClick(position, piece)} 
+            position={position}
+            piece={piece}
+            highlight={highlight}
+        />);
     };
 
-    private populateBoard = (boardWidth: number, boardHeight: number, pieceLocations: PieceLocations): ReactNode => {
+    private populateBoard = (boardWidth: number, boardHeight: number, gameState: GameState): ReactNode => {
+        const {highlights, pieces} = this.props.gameState;
         const board: ReactNode[] = [];
         for (let y = 0; y < boardHeight; y++) {
-            const row : ReactNode[] = [];
+            const row: ReactNode[] = [];
             for (let x = 0; x < boardWidth; x++) {
-                const squareKey: string = `square_${x}_${y}`;   
-                const pieceColor = this.getPieceColor({x, y}, pieceLocations);
-                const square = (<Square
-                    key={squareKey}
-                    click={Square.clickFunction({x, y})} 
-                    position={{x, y}}
-                    pieceColor={pieceColor}
-                />);
-                row.push(square);
+                row.push(this.populateSquare({x, y}, gameState));
             }            
             board.push(<div className="row" key={`row_${y}`}>{row}</div>);
         }
@@ -92,9 +90,8 @@ class Board extends React.Component<Props, State> {
     }
 
     render(): ReactNode {
-        const { width, height } = this.props;
-        const { pieceLocations } = this.state;
-        return this.populateBoard(width, height, pieceLocations);
+        const { width, height, gameState } = this.props;
+        return this.populateBoard(width, height, gameState);
     }
 
 }
