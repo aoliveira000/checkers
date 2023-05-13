@@ -1,7 +1,6 @@
 import React, { MouseEvent, MouseEventHandler, ReactNode } from "react";
 import Board from './components/Board';
 import Message from './components/Message';
-import NewGame from './components/NewGame';
 import Piece, {Props as PieceProperties} from "./components/Piece";
 import PlayerSelect from './components/PlayerSelect';
 import { GameState, Move, Position } from "./interfaces/Shared";
